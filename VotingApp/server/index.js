@@ -14,6 +14,13 @@ app.listen(3000,()=>{
 
 app.use(express.urlencoded({extended:true}))
 
+// enable CORS
+app.use((req,res,next)=>{
+  res.setHeader("Access-Control-Allow_Origin","*")
+  
+  next()
+})
+
 app.get("/poll",async(req,res)=>{
   let data = JSON.parse(await fs.readFile(dataFile, 'utf-8'))
   // console.log(data);
