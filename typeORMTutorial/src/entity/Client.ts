@@ -1,57 +1,54 @@
-
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  UpdateDateColumn
+} from 'typeorm';
+import { Banker } from './Banker';
+import { Transaction } from './Transaction';
+import { Person } from './utils/Person';
 
 @Entity('client')
-export class Client extends BaseEntity {
-  @PrimaryColumn()
-  id: number
+export class Client extends Person {
+	@Column({
+		type: 'numeric',
+	})
+	balance: number;
 
-  @Column()
-  first_name: string
+	@Column({
+		name: 'active',
+		default: true,
+	})
+	is_active: boolean;
 
-  @Column()
-  last_name: string
+	@Column({
+		type: 'simple-json',
+		nullable: true,
+	})
+	additional_info: {
+		age: number;
+		hair_color: string;
+	};
 
-  @Column({
-    unique: true
-  })
-  email: string
+	@Column({ type: 'simple-array', default: [] })
+	family_members: string[];
 
-  @Column({
-    unique: true,
-    length: 10
-  })
-  card_number: string
+	@CreateDateColumn()
+	created_at: Date;
 
-  @Column({
-    type: 'numeric'
-  })
-  balance: number
+	@UpdateDateColumn()
+	updated_at: Date;
 
-  @Column({
-    default: true,
-    name: 'active'
-  })
-  is_active: boolean
+	@ManyToMany((type) => Banker, {
+		cascade: true,
+	})
+	bankers: Banker[];
 
-  @Column({
-    type: 'simple-json',
-    nullable: true
-  })
-  additional_info: {
-    age: number
-    hair_color: string
-  }
-
-  @Column({
-    type: 'simple-array',
-    default: []
-  })
-  family_members: string[]
-
-  @CreateDateColumn()
-  created_at: Date
-
-  @UpdateDateColumn()
-  updated_at: Date
+	@OneToMany(
+		() => Transaction,
+		(transaction) => transaction.client
+	)
+	transactions: Transaction[];
 }
