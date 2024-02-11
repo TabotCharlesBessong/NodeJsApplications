@@ -172,3 +172,37 @@ db.data.aggregate([
     $count: 'usersWithSpecialPhoneNumber'
   }
 ])
+
+// 11. Who has registered most recently
+
+db.data.aggregate([
+  {
+    $sort: {
+      registered: -1
+    }
+  },
+  {
+    $limit: 5
+  },
+  {
+    $project: {
+      name:1,
+      registered:1,
+      favoriteFruit:1
+    }
+  }
+])
+
+// 12 Categorize users by their favorite fruit
+
+db.data.aggregate([
+  {
+    $group:{
+      _id:"$favoriteFruit",
+      users:{
+        $push:"$name"
+      }
+    }
+  }
+])
+
