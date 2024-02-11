@@ -128,3 +128,47 @@ db.data.aggregate([
     }
   }
 ])
+
+// 8. How many users have 'enim' as one of their tags
+db.data.aggregate([
+  {
+    $match: {
+      tags:"enim"
+    }
+  },
+  {
+    $count:"userWithEnimTag"
+  }
+])
+
+// 9. What are the name of users who are inactive and have 'velit' as a tag?
+db.data.aggregate([
+  {
+    $match:{
+      isActive:false,
+      tags:'velit',
+      age:{
+        $gt:20
+      }
+    }
+  },
+  {
+    $project: {
+      name:1,
+      age:1
+    }
+  }
+])
+
+// 10. How many users have phone numbers starting with '+1 (940)'?
+
+db.data.aggregate([
+  {
+    $match:{
+      "company.phone": /^\+1 \(940\)/
+    }
+  },
+  {
+    $count: 'usersWithSpecialPhoneNumber'
+  }
+])
