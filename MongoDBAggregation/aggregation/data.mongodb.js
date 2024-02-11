@@ -84,3 +84,47 @@ db.data.aggregate([
     }
   }
 ])
+
+// 7. What is the average number of tags per users
+// when you have arrays, you need to seperate the arrays if you have to make use of result from the array
+// Method 1
+db.data.aggregate([
+  {
+    $unwind: "$tags"
+  },
+  {
+    $group:{
+      _id:"$_id",
+      numberOfTags:{
+        $sum:1
+      }
+    }
+  },
+  {
+    $group:{
+      _id:null,
+      averageNumberOfTags:{
+        $avg:"$numberOfTags"
+      }
+    }
+  }
+])
+
+// Method 2
+db.data.aggregate([
+  {
+    $addFields: {
+      numberOfTags: {
+        $size:{$ifNull:["$tags",[]]}
+      }
+    }
+  },
+  {
+    $group:{
+      _id:null,
+      averageNumberOfTags:{
+        $avg:"$numberOfTags"
+      }
+    }
+  }
+])
