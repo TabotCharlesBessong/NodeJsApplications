@@ -206,3 +206,52 @@ db.data.aggregate([
   }
 ])
 
+// 13 How many users have 'ad' as their second tag in their list of tags
+
+db.data.aggregate([
+  {
+    $match: {
+      "tags.1":"ad"
+    }
+  },
+  {
+    $count: 'usersWithTagOfAd'
+  }
+])
+
+// 14 How many users have 'enim' and 'id' as their tags
+db.data.aggregate([
+  {
+    $match: {
+      "tags":{
+        $all:["enim","id"]
+      }
+    },
+  },
+  {
+    $count: "usersWithTagOfIdAndEnim",
+  },
+]);
+
+// 15 List all the companies located in the USA with their corresponding user count
+db.data.aggregate([
+  {
+    $match: {
+      "company.location.country":"USA"
+    }
+  },
+  {
+    $group:{
+      _id:"$company.title",
+      userCount:{
+        $sum:1
+      }
+    }
+  }
+])
+
+// 
+
+db.data.aggregate([
+  
+])
