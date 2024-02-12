@@ -172,3 +172,86 @@ db.data.aggregate([
     $count: 'usersWithSpecialPhoneNumber'
   }
 ])
+
+// 11. Who has registered most recently
+
+db.data.aggregate([
+  {
+    $sort: {
+      registered: -1
+    }
+  },
+  {
+    $limit: 5
+  },
+  {
+    $project: {
+      name:1,
+      registered:1,
+      favoriteFruit:1
+    }
+  }
+])
+
+// 12 Categorize users by their favorite fruit
+
+db.data.aggregate([
+  {
+    $group:{
+      _id:"$favoriteFruit",
+      users:{
+        $push:"$name"
+      }
+    }
+  }
+])
+
+// 13 How many users have 'ad' as their second tag in their list of tags
+
+db.data.aggregate([
+  {
+    $match: {
+      "tags.1":"ad"
+    }
+  },
+  {
+    $count: 'usersWithTagOfAd'
+  }
+])
+
+// 14 How many users have 'enim' and 'id' as their tags
+db.data.aggregate([
+  {
+    $match: {
+      "tags":{
+        $all:["enim","id"]
+      }
+    },
+  },
+  {
+    $count: "usersWithTagOfIdAndEnim",
+  },
+]);
+
+// 15 List all the companies located in the USA with their corresponding user count
+db.data.aggregate([
+  {
+    $match: {
+      "company.location.country":"USA"
+    }
+  },
+  {
+    $group:{
+      _id:"$company.title",
+      userCount:{
+        $sum:1
+      }
+    }
+  }
+])
+
+// 
+
+db.data.aggregate([
+  
+])
