@@ -46,10 +46,17 @@ const deleteProduct = async (req, res) => {
   res.status(200).send("Product deleted successfully");
 };
 
+// 6 get published products
+const getPublishedProduct = async (req,res) => {
+  const products = await Product.findAll({where:{published:true}})
+  res.status(200).send(products)
+}
+
 module.exports = {
   addProduct,
   getAllProducts,
   getOneProduct,
   updateProduct,
   deleteProduct,
+  getPublishedProduct
 };
