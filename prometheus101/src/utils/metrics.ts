@@ -16,6 +16,18 @@ export const databaseResponseTimeHistogram = new client.Histogram({
   labelNames: ["operation", "success"],
 });
 
+export const restResponseTimeSummaries = new client.Summary({
+  name: "rest_response_time_duration_second",
+  help: "REST API response time in seconds",
+  // labelNames: ["method", "route", "status_code"],
+});
+
+export const databaseResponseTimeSummaries = new client.Summary({
+  name: "db_response_time_duration_second",
+  help: "Database response time in seconds",
+  // labelNames: ["operation", "success"],
+});
+
 export function startMetricsServer() {
   const collectDefaultMetrics = client.collectDefaultMetrics;
 
