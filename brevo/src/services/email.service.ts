@@ -1,23 +1,39 @@
-import * as SibApiV3Sdk from '@getbrevo/brevo';
+import * as Brevo from '@getbrevo/brevo';
 import { config } from '../config';
+import fs from 'fs';
+import path from 'path';
 
 // Configure API key authorization
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-apiInstance.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, config.brevo.apiKey);
+const apiInstance = new Brevo.TransactionalEmailsApi();
+apiInstance.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, config.brevo.apiKey);
 
-export const sendVerificationEmail = async (email: string, code: string) => {
-  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-  
-  sendSmtpEmail.to = [{ email }];
-  sendSmtpEmail.subject = 'Email Verification';
-  sendSmtpEmail.htmlContent = `
-    <h1>Email Verification</h1>
-    <p>Your verification code is: <strong>${code}</strong></p>
-    <p>This code will expire in 1 hour.</p>
-  `;
-  sendSmtpEmail.sender = { name: 'Auth App', email: config.brevo.senderEmail };
+const readTemplate = (templateName: string): string => {
+  const templatePath = path.join(__dirname, '..', 'email_templates', templateName);
+  return fs.readFileSync(templatePath, 'utf-8');
+};
 
+const replacePlaceholders = (template: string, replacements: Record<string, string>): string => {
+  let result = template;
+  for (const [key, value] of Object.entries(replacements)) {
+    result = result.replace(new RegExp(`{{${key}}}`, 'g'), value);
+  }
+  return result;
+};
+
+export const sendVerificationEmail = async (email: string, verificationCode: string): Promise<void> => {
   try {
+    const template = readTemplate('verification-email.html');
+    const htmlContent = replacePlaceholders(template, {
+      verificationCode,
+      verificationUrl: `${config.frontendUrl}/verify-email?code=${verificationCode}&email=${email}`
+    });
+
+    const sendSmtpEmail = new Brevo.SendSmtpEmail();
+    sendSmtpEmail.to = [{ email }];
+    sendSmtpEmail.subject = 'Verify Your Email';
+    sendSmtpEmail.htmlContent = htmlContent;
+    sendSmtpEmail.sender = { name: 'Your App Name', email: config.brevo.senderEmail };
+
     await apiInstance.sendTransacEmail(sendSmtpEmail);
   } catch (error) {
     console.error('Error sending verification email:', error);
@@ -25,19 +41,20 @@ export const sendVerificationEmail = async (email: string, code: string) => {
   }
 };
 
-export const sendPasswordResetEmail = async (email: string, code: string) => {
-  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-  
-  sendSmtpEmail.to = [{ email }];
-  sendSmtpEmail.subject = 'Password Reset';
-  sendSmtpEmail.htmlContent = `
-    <h1>Password Reset</h1>
-    <p>Your password reset code is: <strong>${code}</strong></p>
-    <p>This code will expire in 1 hour.</p>
-  `;
-  sendSmtpEmail.sender = { name: 'Auth App', email: config.brevo.senderEmail };
-
+export const sendPasswordResetEmail = async (email: string, resetCode: string): Promise<void> => {
   try {
+    const template = readTemplate('reset-password-email.html');
+    const htmlContent = replacePlaceholders(template, {
+      resetCode,
+      resetUrl: `${config.frontendUrl}/reset-password?code=${resetCode}&email=${email}`
+    });
+
+    const sendSmtpEmail = new Brevo.SendSmtpEmail();
+    sendSmtpEmail.to = [{ email }];
+    sendSmtpEmail.subject = 'Reset Your Password';
+    sendSmtpEmail.htmlContent = htmlContent;
+    sendSmtpEmail.sender = { name: 'Your App Name', email: config.brevo.senderEmail };
+
     await apiInstance.sendTransacEmail(sendSmtpEmail);
   } catch (error) {
     console.error('Error sending password reset email:', error);

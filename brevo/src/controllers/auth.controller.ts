@@ -1,18 +1,19 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { User } from '../models/User';
 import { config } from '../config';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.service';
 import { generateVerificationCode } from '../utils/helpers';
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      res.status(400).json({ message: 'User already exists' });
+      return;
     }
 
     // Generate verification code
@@ -32,13 +33,13 @@ export const register = async (req: Request, res: Response) => {
     // Send verification email
     await sendVerificationEmail(email, verificationCode);
 
-    res.status(201).json({ message: 'Registration successful. Please check your email for verification.' });
+    res.status(201).json({ message: 'Registration successful. Please check your email for verification.' ,user});
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const verifyEmail = async (req: Request, res: Response) => {
+export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, code } = req.body;
 
@@ -49,12 +50,13 @@ export const verifyEmail = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired verification code' });
+      res.status(400).json({ message: 'Invalid or expired verification code' });
+      return;
     }
 
     user.isVerified = true;
-    user.verificationCode = undefined;
-    user.verificationCodeExpires = undefined;
+    user.verificationCode = '';
+    user.verificationCodeExpires = new Date();
     await user.save();
 
     res.json({ message: 'Email verified successfully' });
@@ -63,27 +65,32 @@ export const verifyEmail = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ message: 'Invalid credentials' });
+      return;
     }
 
     if (!user.isVerified) {
-      return res.status(401).json({ message: 'Please verify your email first' });
+      res.status(401).json({ message: 'Please verify your email first' });
+      return;
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ message: 'Invalid credentials' });
+      return;
     }
 
-    const token = jwt.sign({ userId: user._id }, config.jwtSecret, {
-      expiresIn: config.jwtExpiresIn,
-    });
+    const token = jwt.sign(
+      { userId: user._id },
+      config.jwtSecret as jwt.Secret,
+      { expiresIn: config.jwtExpiresIn } as SignOptions
+    );
 
     res.json({ token });
   } catch (error: any) {
@@ -91,13 +98,14 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const forgotPassword = async (req: Request, res: Response) => {
+export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email } = req.body;
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
 
     const resetCode = generateVerificationCode();
@@ -113,7 +121,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
   }
 };
 
-export const resetPassword = async (req: Request, res: Response) => {
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, code, password } = req.body;
 
@@ -124,12 +132,13 @@ export const resetPassword = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired reset code' });
+      res.status(400).json({ message: 'Invalid or expired reset code' });
+      return;
     }
 
     user.password = password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
+    user.resetPasswordToken = '';
+    user.resetPasswordExpires = new Date();
     await user.save();
 
     res.json({ message: 'Password reset successful' });
