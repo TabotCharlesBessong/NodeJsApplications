@@ -1,0 +1,24 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: charlestabot
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: express
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: express
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  environment:
+    NODE_OPTIONS: --enable-source-maps
+    DATABASE_URL: ${env:DATABASE_URL, "fallback_value"}
+    DEBUG: ${env:DEBUG, "fallback_value"}
+
+functions:
+  api:
+    handler: src/app.handler
+    events:
+      - httpApi: "*"
+
+plugins:
+  - serverless-offline
