@@ -3,16 +3,24 @@ const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
+import { neon } from "@neondatabase/serverless";
 
 const port = process.env.PORT || 3000;
 
+const dbClient = () => {
+  const sql = neon(process.env.DATABASE_URL)
+  return sql
+}
+
 app.get("/", (req, res, next) => {
+  const db = dbClient()
   return res.status(200).json({
     message: "Hello from root!",
     DEBUG: process.env.DEBUG,
     NODE_ENV: process.env.NODE_ENV,
     PORT: process.env.PORT,
     DATABASE_URL: process.env.DATABASE_URL,
+    sql: db
   });
 });
 

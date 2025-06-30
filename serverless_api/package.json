@@ -15,7 +15,7 @@
     "serverless-http": "^3.2.0"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.18.1",
+    "drizzle-kit": "^0.31.1",
     "nodemon": "^3.1.10",
     "serverless-offline": "^14.4.0"
   }
