@@ -10,14 +10,21 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", async (req, res) => {
-  const { data, totalCount } = await clerkClient.users.getUserList({
-    limit: 10,
-    orderBy: "+first_name",
-    query: "",
-    pageSize: 10,
-  });
+  // const { data, totalCount } = await clerkClient.users.getUserList({
+  //   limit: 10,
+  //   orderBy: "+first_name",
+  //   query: "",
+  //   pageSize: 10,
+  // });
   // res.send('Hello, World!');
-  res.json({ data, total: totalCount });
+
+  const getUser = await clerkClient.users.getUser(
+    "user_2upgiJPQCLFbwaKnRCD14yVd1rS"
+  );
+  const getcount = await clerkClient.users.getCount({
+    query:"Charles"
+  });
+  res.json({ data: getUser, total: getcount });
 });
 
 app.listen(port, () => {
