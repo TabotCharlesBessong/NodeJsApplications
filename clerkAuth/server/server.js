@@ -43,23 +43,26 @@ app.post("/", async (req, res) => {
   //   query:""
   // });
 
-  const { username, email, password } = req.body;
+  const { username, emailAddress, password } = req.body;
 
-  const user = await clerkClient.users
-    .createUser({
-      username: username,
-      emailAddresses: [email],
-      password: password,
-    })
-    .then((data) => {
-      res
-        .status(201)
-        .json({ data: user, message: "user created successfully" });
-    })
-    .catch((error) => {
-      console.error("Error creating user:", error);
-      res.status(500).json({ error: "Failed to create user" });
+  try {
+    const user = await clerkClient.users.createUser({
+      username,
+      emailAddress: emailAddress,
+      password,
     });
+
+    res.status(201).json({
+      message: "User created successfully",
+      userId: user.id,
+    });
+  } catch (error) {
+    console.error("Error creating user:", error);
+    res.status(500).json({
+      message: "Failed to create user",
+      error: error.message,
+    });
+  }
 });
 
 app.listen(port, () => {
