@@ -129,6 +129,15 @@ adminRouter.post("/unlock/:userId", async (req, res) => {
   }
 });
 
+adminRouter.post("/verify/password/:userId", async (req,res) => {
+  try{
+    const verifyPassword = await clerkClient.users.verifyPassword(req.params.userId, req.body.password);
+    res.status(200).json({ message: "Password verified", verifyPassword });
+  }catch{
+    res.status(401).json({ error: "Password verification failed" });
+  }
+})
+
 app.use("/api/admin", adminRouter);
 
 app.listen(port, () => {
