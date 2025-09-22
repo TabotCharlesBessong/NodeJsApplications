@@ -3,12 +3,14 @@ import db from './models';
 import authRoutes from './routes/authRoutes';
 import accountRoutes from './routes/accountRoutes';
 import transactionRoutes from './routes/transactionRoutes';
-// import dotenv from "dotenv"
+import dotenv from "dotenv"
 
-// dotenv.config()
+dotenv.config()
+
+const port = process.env.PORT || 3000
 
 const app = express();
-const PORT = 3000;
+const PORT = port;
 
 app.use(express.json());
 app.use('/api/auth', authRoutes);
